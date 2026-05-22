@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>阿麥小公主的專屬機密</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+      }
+      body {
+        background: linear-gradient(135deg, #ffe5ec 0%, #ffcad4 100%);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+        overflow: hidden;
+        position: relative;
+      }
+      .card {
+        background: rgba(255, 255, 255, 0.95);
+        padding: 40px 25px;
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+        text-align: center;
+        width: 100%;
+        max-width: 360px;
+        position: relative;
+        z-index: 5;
+        overflow: hidden;
+        transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      }
+
+      /* ─── 45度半透明斜角綁帶樣式 ─── */
+      .ribbon-wrapper {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 20;
+      }
+      .ribbon-diagonal-1 {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 150%;
+        height: 30px;
+        background: rgba(255, 71, 126, 0.4);
+        transform: translate(-50%, -50%) rotate(45deg);
+        box-shadow: 0 0 15px rgba(255, 71, 126, 0.15);
+        transition: all 0.6s ease-in-out;
+      }
+      .ribbon-diagonal-2 {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 150%;
+        height: 30px;
+        background: rgba(255, 71, 126, 0.4);
+        transform: translate(-50%, -50%) rotate(-45deg);
+        box-shadow: 0 0 15px rgba(255, 71, 126, 0.15);
+        transition: all 0.6s ease-in-out;
+      }
+      .bow-button {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 75px;
+        height: 75px;
+        background: #ff477e;
+        border: 4px solid #fff;
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        font-size: 28px;
+        cursor: pointer;
+        pointer-events: auto;
+        box-shadow: 0 5px 20px rgba(255, 71, 126, 0.4);
+        z-index: 30;
+        animation: bowPulse 1.5s infinite;
+      }
+      @keyframes bowPulse {
+        0% {
+          transform: translate(-50%, -50%) scale(1);
+        }
+        50% {
+          transform: translate(-50%, -50%) scale(1.1);
+          box-shadow: 0 8px 30px rgba(255, 71, 126, 0.6);
+        }
+        100% {
+          transform: translate(-50%, -50%) scale(1);
+        }
+      }
+
+      .ribbon-opened .ribbon-diagonal-1 {
+        width: 0;
+        opacity: 0;
+      }
+      .ribbon-opened .ribbon-diagonal-2 {
+        width: 0;
+        opacity: 0;
+      }
+      .ribbon-opened .bow-button {
+        transform: translate(-50%, -50%) scale(0);
+        opacity: 0;
+      }
+
+      /* 內容樣式 */
+      h1 {
+        color: #ff477e;
+        font-size: 26px;
+        margin-bottom: 8px;
+      }
+      p {
+        color: #6c757d;
+        font-size: 16px;
+        line-height: 1.6;
+        margin-bottom: 25px;
+      }
+
+      .date-display {
+        font-size: 14px;
+        color: #ff758c;
+        font-weight: bold;
+        background: #fff5f7;
+        padding: 4px 12px;
+        border-radius: 15px;
+        display: inline-block;
+        margin-bottom: 20px;
+        border: 1px dashed #ffb3c1;
+        letter-spacing: 1px;
+      }
+
+      .btn {
+        background: linear-gradient(90deg, #ff758c 0%, #ff7eb3 100%);
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        font-weight: bold;
+        border-radius: 25px;
+        cursor: pointer;
+        width: 100%;
+        transition: transform 0.2s, box-shadow 0.2s;
+        box-shadow: 0 5px 15px rgba(255, 117, 140, 0.4);
+      }
+      .hidden {
+        display: none !important;
+      }
+
+      .avatar-img {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        border: 4px solid #fff0f3;
+        margin-bottom: 12px;
+        box-shadow: 0 8px 20px rgba(255, 71, 126, 0.2);
+        object-fit: cover;
+        animation: avatarPulse 2s infinite ease-in-out;
+      }
+      @keyframes avatarPulse {
+        0%,
+        100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.05);
+        }
+      }
+
+      /* 迪士尼郵輪大圖樣式 */
+      .cruise-container {
+        width: 100%;
+        margin-top: 15px;
+        margin-bottom: 15px;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+        animation: fadeInScale 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)
+          forwards;
+      }
+      @keyframes fadeInScale {
+        from {
+          opacity: 0;
+          transform: scale(0.8);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+      .cruise-img {
+        width: 100%;
+        height: auto;
+        display: block;
+        object-fit: cover;
+      }
+
+      .quote-box {
+        background: #fff0f3;
+        padding: 15px;
+        border-radius: 12px;
+        border-left: 4px solid #ff477e;
+        margin-bottom: 20px;
+        min-height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      /* 第三頁特殊排版 */
+      #page3 {
+        position: relative;
+        min-height: 440px;
+        transition: min-height 0.4s ease;
+      }
+      #btn-escape {
+        background: #e9ecef;
+        color: #6c757d;
+        box-shadow: none;
+        margin-top: 15px;
+        position: relative;
+        z-index: 100;
+        transition: all 0.15s ease-out;
+      }
+      .floating-sticker {
+        position: absolute;
+        bottom: -50px;
+        font-size: 50px;
+        user-select: none;
+        pointer-events: none;
+        z-index: 999;
+        animation: floatUp 3s linear forwards;
+      }
+      @keyframes floatUp {
+        0% {
+          transform: translateY(0);
+          opacity: 0;
+        }
+        10% {
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(-105vh) rotate(var(--rot))
+            translateX(var(--wobble));
+          opacity: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- 隱藏的 YouTube 播放器容器 (用於背景音樂) -->
+    <div id="youtube-audio-player" class="hidden"></div>
+
+    <div id="page1" class="card">
+      <div class="ribbon-wrapper" id="ribbon-box">
+        <div class="ribbon-diagonal-1"></div>
+        <div class="ribbon-diagonal-2"></div>
+        <div class="bow-button" onclick="unwrapped(this)">🎀</div>
+      </div>
+
+      <h1>🔒 國家最高機密</h1>
+      <p>
+        這裡有一份給「阿麥小公主」的專屬檔案。<br />請確定附近沒有其他凡人偷看再打開。
+      </p>
+      <p style="font-size: 12px; color: #adb5bd">
+        (溫馨提示：請溫柔地拆開，不要弄壞帶子了喔~)
+      </p>
+    </div>
+
+    <div id="page2" class="card hidden">
+      <div class="avatar-container">
+        <img src="image/ouciii.jpg" alt="阿麥公主" class="avatar-img" />
+      </div>
+
+      <div class="date-display" id="today-date">🗓️ 讀取日期中...</div>
+
+      <h1>🎉 阿麥，生日快樂！ 🎉</h1>
+      <p>恭喜妳又到了「永遠的 18 歲」續約日！</p>
+
+      <div class="quote-box" id="quote-text">
+        點下方按鈕看看凡人對妳的真心話...
+      </div>
+      <button
+        class="btn"
+        style="background: #ff8fa3; margin-bottom: 20px"
+        onclick="changeQuote()"
+      >
+        👉 切換公主語錄
+      </button>
+      <button class="btn" onclick="goToPage3()">
+        好了，那本公主的禮物呢？
+      </button>
+    </div>
+
+    <div id="page3" class="card hidden">
+      <h1 id="page3-title">🎁 驚喜大獎來了！</h1>
+      <p id="page3-desc">
+        恭喜獲得：純手工訂製網頁一網址！<br />實體禮物配送中，請先發朋友圈炫耀(誤)
+        ❤️
+      </p>
+
+      <button class="btn" id="btn-accept" onclick="acceptGift()">
+        好吧，勉為其難接受
+      </button>
+
+      <button class="btn" id="btn-escape">這什麼爛禮物，拒絕接受</button>
+
+      <div id="disney-surprise" class="hidden">
+        <div class="cruise-container">
+          <img src="image/dsz.jpg" alt="迪士尼探險號" class="cruise-img" />
+        </div>
+        <p
+          style="
+            color: #ff477e;
+            font-weight: bold;
+            font-size: 18px;
+            margin-top: 10px;
+            line-height: 1.4;
+          "
+        >
+          ✨恭喜妳獲得迪士尼探險號的邀請！✨
+        </p>
+      </div>
+    </div>
+
+    <script>
+      const quotes = [
+        "祝妳數錢數到手抽筋，美到鏡子自動美顏",
+        "歲月是一把殺豬刀，但對妳一點辦法都沒有",
+        "恭喜平安度過一年沒被自己美醒的日子",
+      ];
+      let quoteIndex = 0,
+        escapeScale = 1.0,
+        acceptScale = 1.0;
+
+      // ─── 🌟 YouTube API 背景音樂載入機制 ───
+      let audioPlayer;
+
+      // 載入 YouTube Iframe API
+      const tag = document.createElement("script");
+      tag.src = "https://www.youtube.com/iframe_api";
+      const firstScriptTag = document.getElementsByTagName("script")[0];
+      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+      // 當 API 準備好時觸發
+      function onYouTubeIframeAPIReady() {
+        audioPlayer = new YT.Player("youtube-audio-player", {
+          height: "0",
+          width: "0",
+          videoId: "ILRs2r6lcHY", // 妳指定的音樂 ID
+          playerVars: {
+            autoplay: 0, // 先不要自動播放
+            controls: 0, // 隱藏控制項
+            loop: 1, // 循環播放
+            playlist: "ILRs2r6lcHY", // 循環播放必須重複傳入 ID
+          },
+        });
+      }
+
+      function unwrapped(el) {
+        const wrapper = document.getElementById("ribbon-box");
+        wrapper.classList.add("ribbon-opened");
+
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = today.getMonth() + 1;
+        const dd = today.getDate();
+
+        document.getElementById(
+          "today-date"
+        ).innerText = `✨ 今天是：${yyyy} 年 ${mm} 月 ${dd} 日 ✨`;
+
+        shootConfetti(0.5);
+
+        setTimeout(() => {
+          document.getElementById("page1").classList.add("hidden");
+          document.getElementById("page2").classList.remove("hidden");
+          changeQuote();
+          shootConfetti(1.0);
+        }, 650);
+      }
+
+      function changeQuote() {
+        document.getElementById("quote-text").innerText = quotes[quoteIndex];
+        quoteIndex = (quoteIndex + 1) % quotes.length;
+      }
+
+      function goToPage3() {
+        document.getElementById("page2").classList.add("hidden");
+        document.getElementById("page3").classList.remove("hidden");
+        initEscapeButton();
+      }
+
+      // ─── 🌟 核心修改：點擊接受後隱藏按鈕、彈出迪士尼圖片、並啟動音樂 ───
+      function acceptGift() {
+        // 點擊後啟動 YouTube 背景音樂播放
+        if (audioPlayer && typeof audioPlayer.playVideo === "function") {
+          audioPlayer.playVideo();
+        }
+
+        // 1. 噴發珍奶、巧克力貼圖與滿天彩帶
+        spawnStickers();
+        shootConfetti(1.5);
+
+        // 2. 徹底隱藏「接受」與「拒絕」按鈕
+        document.getElementById("btn-accept").classList.add("hidden");
+        document.getElementById("btn-escape").classList.add("hidden");
+
+        // 3. 修改原本好笑的標題與文字，改成終極大獎文案
+        document.getElementById("page3-title").innerText =
+          "🚢 終極真·驚喜來了！";
+        document.getElementById("page3-desc").innerHTML =
+          "剛剛那是開玩笑的啦！<br>真正的生日大獎在這裡 👇";
+
+        // 4. 讓新加坡迪士尼郵輪大圖與恭喜文案顯示出來
+        document.getElementById("disney-surprise").classList.remove("hidden");
+
+        // 5. 調整一下卡片容器的高度適應圖片
+        document.getElementById("page3").style.minHeight = "auto";
+      }
+
+      function initEscapeButton() {
+        const esc = document.getElementById("btn-escape"),
+          acc = document.getElementById("btn-accept");
+        const run = (e) => {
+          if (e) e.preventDefault();
+          escapeScale -= 0.2;
+          acceptScale += 0.15;
+          acc.style.transform = `scale(${acceptScale})`;
+          if (escapeScale <= 0) return (esc.style.display = "none");
+          const rect = document.querySelector("#page3").getBoundingClientRect();
+          if (esc.style.position !== "absolute") {
+            esc.style.position = "absolute";
+            esc.style.width = rect.width - 40 + "px";
+          }
+          esc.style.left =
+            Math.max(
+              10,
+              Math.floor(Math.random() * (rect.width - esc.offsetWidth))
+            ) + "px";
+          esc.style.top =
+            Math.max(
+              10,
+              Math.floor(Math.random() * (rect.height - esc.offsetHeight))
+            ) + "px";
+          esc.style.transform = `scale(${escapeScale})`;
+          esc.style.opacity = escapeScale;
+        };
+        esc.addEventListener("touchstart", run);
+        esc.addEventListener("mouseover", run);
+      }
+
+      function spawnStickers() {
+        const stickers = ["🧋", "🍫", "🎂", "💖"];
+        for (let i = 0; i < 30; i++) {
+          setTimeout(() => {
+            const s = document.createElement("div");
+            s.className = "floating-sticker";
+            s.innerText = stickers[Math.floor(Math.random() * stickers.length)];
+            s.style.left = Math.random() * 100 + "vw";
+            s.style.setProperty("--rot", Math.random() * 360 - 180 + "deg");
+            s.style.setProperty("--wobble", Math.random() * 200 - 100 + "px");
+            document.body.appendChild(s);
+            setTimeout(() => s.remove(), 3000);
+          }, i * 100);
+        }
+      }
+
+      function shootConfetti(scalar) {
+        confetti({
+          particleCount: 80 * scalar,
+          spread: 70,
+          origin: { y: 0.6 },
+          colors: ["#ff477e", "#ff758c", "#fff"],
+        });
+      }
+    </script>
+  </body>
+</html>
